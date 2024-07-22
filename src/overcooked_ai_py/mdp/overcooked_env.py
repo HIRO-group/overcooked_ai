@@ -194,7 +194,7 @@ class OvercookedEnv(object):
             ep_shaped_r: the component of the reward that is due to reward shaped (excluding sparse rewards)
             ep_length: length of rollout
         """
-        # TODO Ava/Chihui Extend to four players
+        
         assert not self.is_done()
         if joint_agent_action_info is None: joint_agent_action_info = [{} for _ in range(self.mdp.num_players)]
         next_state, mdp_infos = self.mdp.get_state_transition(self.state, joint_action, display_phi, self.mp)

@@ -1262,7 +1262,6 @@ class OvercookedGridworld(object):
         shaped reward is given only for completion of subgoals 
         (not soup deliveries).
         """
-        # TODO Ava/Chihui extend to more players
         events_infos = { event : [False] * self.num_players for event in EVENT_TYPES }
         assert not self.is_terminal(state), "Trying to find successor of a terminal state: {}".format(state)
         for action, action_set in zip(joint_action, self.get_actions(state)):
@@ -1472,19 +1471,27 @@ class OvercookedGridworld(object):
 
     def is_transition_collision(self, old_positions, new_positions):
         # Checking for any players ending in same square
-        if self.is_joint_position_collision(new_positions):
+        new_pos_list = list(new_positions)
+        first_tuple = new_pos_list[0]
+        collision = all(t == first_tuple for t in new_pos_list)
+        if collision:
             self.prev_step_was_collision = True
             return True
-
-        for idx0, idx1 in itertools.combinations(range(self.num_players), 2):
-
-            p1_old, p2_old = old_positions[idx0], old_positions[idx1]
-            p1_new, p2_new = new_positions[idx0], new_positions[idx1]
-            if p1_new == p2_old and p1_old == p2_new:
-                self.prev_step_was_collision = True
-                return True
         self.prev_step_was_collision = False
         return False
+        # if self.is_joint_position_collision(new_positions):
+        #     self.prev_step_was_collision = True
+        #     return True
+
+        # for idx0, idx1 in itertools.combinations(range(self.num_players), 2):
+
+        #     p1_old, p2_old = old_positions[idx0], old_positions[idx1]
+        #     p1_new, p2_new = new_positions[idx0], new_positions[idx1]
+        #     if p1_new == p2_old and p1_old == p2_new:
+        #         self.prev_step_was_collision = True
+        #         return True
+        # self.prev_step_was_collision = False
+        # return False
 
     def is_joint_position_collision(self, joint_position):
         return any(pos0 == pos1 for pos0, pos1 in itertools.combinations(joint_position, 2))
@@ -1495,11 +1502,29 @@ class OvercookedGridworld(object):
             if obj.name == 'soup' and obj.is_cooking:
                 obj.cook()
 
+    
+    def get_new_positions(self, old_positions, new_positions):
+        new_positions_final = list(new_positions)
+        for idx1 in range(len(new_positions)):
+            for idx2 in range(len(new_positions)):
+                if idx1 != idx2 and new_positions[idx1] == new_positions[idx2]:
+                    new_positions_final[idx1] = old_positions[idx1]
+                    new_positions_final[idx2] = old_positions[idx2]
+        
+        for idx1 in range(len(new_positions_final)):
+            for idx2 in range(len(new_positions_final)):
+                if idx1 != idx2 and new_positions_final[idx1] == new_positions_final[idx2]:
+                    return old_positions
+
+        return tuple(new_positions_final)
+
+
     def _handle_collisions(self, old_positions, new_positions):
-        """If agents collide, they stay at their old locations"""
+        """If ALL agents collide, they stay at their old locations"""
         if self.is_transition_collision(old_positions, new_positions):
             return old_positions
-        return new_positions
+        
+        return self.get_new_positions(old_positions, new_positions)
 
     def _get_terrain_type_pos_dict(self):
         pos_dict = defaultdict(list)
@@ -2653,6 +2678,7 @@ class OvercookedGridworld(object):
 
         # At last
         return potential
+    
 
     ##############
     # DEPRECATED #
