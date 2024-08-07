@@ -242,7 +242,7 @@ class OvercookedEnv(object):
             self._mlam = None
             self._mp = None
         if self.start_state_fn is None:
-            self.state = self.mdp.get_standard_start_state()
+            self.state = self.mdp.get_fully_random_start_state_fn(self._mlam)(random_pos=True, random_dir=True)
         else:
             self.state = self.start_state_fn(**start_state_kwargs)
 

@@ -1077,13 +1077,14 @@ class OvercookedGridworld(object):
     def get_fully_random_start_state_fn(self, mlam):
         def start_state_fn(random_pos=False, random_dir=False, max_random_objs=0):
             if random_pos:
+                # Should manually set valid positions for seperated layouts
                 if self.layout_name == 'asymmetric_advantages':
                     valid_positions = list(itertools.product([(7, 1), (5, 2), (6, 2), (7, 2), (5, 3), (6, 3), (7, 3)],
                                                              [(1, 1), (1, 2), (1, 2), (3, 2), (1, 3), (2, 3), (3, 3)]))
                 elif self.layout_name == 'forced_coordination':
                     valid_positions = list(itertools.product([(3, 1), (3, 2), (3, 3)], [(1, 1), (1, 2), (1, 3)]))
-                else:
-                    valid_positions = self.get_valid_joint_player_positions()
+                # TODO: Add valid positions for other layouts
+                valid_positions = self.get_valid_joint_player_positions()
                 start_pos = valid_positions[np.random.choice(len(valid_positions))]
             else:
                 start_pos = self.start_player_positions
@@ -1554,7 +1555,7 @@ class OvercookedGridworld(object):
 
     def get_valid_joint_player_positions(self):
         """Returns all valid tuples of the form (p0_pos, p1_pos, p2_pos, ...)"""
-        valid_positions = self.get_valid_player_positions() 
+        valid_positions = self.get_valid_player_positions()
         all_joint_positions = list(itertools.product(valid_positions, repeat=self.num_players))
         valid_joint_positions = [j_pos for j_pos in all_joint_positions if not self.is_joint_position_collision(j_pos)]
         return valid_joint_positions
