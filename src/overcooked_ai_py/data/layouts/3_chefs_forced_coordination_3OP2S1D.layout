@@ -1,7 +1,7 @@
 {
     "grid":  """XXXXXSX
-                O X1P X
-                O2X P3D
+                O X P X
+                O2X1P3D
                 O X P X
                 XXXXXSX""",
     "start_bonus_orders": [],
