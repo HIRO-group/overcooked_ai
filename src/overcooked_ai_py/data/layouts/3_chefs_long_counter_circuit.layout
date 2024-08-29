@@ -1,0 +1,15 @@
+ {
+    "grid":  """XXXXXXXODOXXXXXXX
+                X       1       X
+                X XXXXXXXXXXXXX X
+                X 2           3 X
+                XXXXXXXPSPXXXXXXX""",
+    "start_bonus_orders": [],
+    "start_all_orders" : [
+        { "ingredients" : ["onion", "onion", "onion"]}
+    ],
+    "rew_shaping_params": None
+}
+# Motivation: Long counter circuit. Really just a scaled up
+# version of counter circuit. Trade off of going around is
+# increased to motivate using the counter more, but nothing crazy

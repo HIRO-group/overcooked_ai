@@ -1,0 +1,20 @@
+{
+    "grid":  """XXXXXDXDXXXXX
+                X   P   P   X
+                X DXP   PXD X
+                X   O   O   X
+                XX XXX XXX XX
+                X           X
+                X 1   2   3 X
+                XXXXXXSXXXXXX""",
+    "start_bonus_orders": [],
+    "start_all_orders" : [
+        { "ingredients" : ["onion", "onion", "onion"]}
+    ],
+    "rew_shaping_params": None
+}
+# Motivation: Unequal kitchens. The middle kitchen is by far the best kitchen,
+# but if everyone takes the middle kitchen it will reduce the overall performance.
+# Agents must decide how to use the different kitchens. Service can also be seperated
+# easily adding alternative strategies (e.g. one person per kitchen vs 2 in the
+# middle kitchen + 1 that just serves)
