@@ -1504,26 +1504,40 @@ class OvercookedGridworld(object):
 
     
     def get_new_positions(self, old_positions, new_positions):
-        new_positions_final = list(new_positions)
-        for idx1 in range(len(new_positions)):
-            for idx2 in range(len(new_positions)):
-                if idx1 != idx2 and new_positions[idx1] == new_positions[idx2]:
-                    new_positions_final[idx1] = old_positions[idx1]
-                    new_positions_final[idx2] = old_positions[idx2]
-        
-        for idx1 in range(len(new_positions_final)):
-            for idx2 in range(len(new_positions_final)):
-                if idx1 != idx2 and new_positions_final[idx1] == new_positions_final[idx2]:
-                    return old_positions
+        def calculate_collision_groups(positions):
+            collision_groups = {}
+            for i, pos in enumerate(positions):
+                if pos in collision_groups:
+                    collision_groups[pos].append(i)
+                else:
+                    collision_groups[pos] = [i]
+            return collision_groups
 
-        return tuple(new_positions_final)
+        def resolve_collisions(collision_groups, new_positions, old_positions):
+            for _, agents in collision_groups.items():
+                if len(agents) > 1:
+                    for i in agents:
+                        new_positions[i] = old_positions[i]
+            return new_positions
+
+        def collision_exists(collision_groups):
+            return any(len(agents) > 1 for agents in collision_groups.values())
+        
+        new_positions = list(new_positions)
+        old_positions = list(old_positions)
+
+        collision_groups = calculate_collision_groups(new_positions)
+        while collision_exists(collision_groups):
+            new_positions = resolve_collisions(collision_groups, new_positions, old_positions)
+            collision_groups = calculate_collision_groups(new_positions)
+        return tuple(new_positions)
 
 
     def _handle_collisions(self, old_positions, new_positions):
         """If ALL agents collide, they stay at their old locations"""
         if self.is_transition_collision(old_positions, new_positions):
             return old_positions
-        
+
         return self.get_new_positions(old_positions, new_positions)
 
     def _get_terrain_type_pos_dict(self):
