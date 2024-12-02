@@ -1470,28 +1470,16 @@ class OvercookedGridworld(object):
         return new_positions, new_orientations
 
     def is_transition_collision(self, old_positions, new_positions):
-        # Checking for any players ending in same square
+        # Checking if ALL players ended up in the same position
         new_pos_list = list(new_positions)
-        first_tuple = new_pos_list[0]
-        collision = all(t == first_tuple for t in new_pos_list)
+        first_agent_pos = new_pos_list[0]
+        collision = all(agent_pos == first_agent_pos for agent_pos in new_pos_list)
         if collision:
             self.prev_step_was_collision = True
             return True
         self.prev_step_was_collision = False
         return False
-        # if self.is_joint_position_collision(new_positions):
-        #     self.prev_step_was_collision = True
-        #     return True
-
-        # for idx0, idx1 in itertools.combinations(range(self.num_players), 2):
-
-        #     p1_old, p2_old = old_positions[idx0], old_positions[idx1]
-        #     p1_new, p2_new = new_positions[idx0], new_positions[idx1]
-        #     if p1_new == p2_old and p1_old == p2_new:
-        #         self.prev_step_was_collision = True
-        #         return True
-        # self.prev_step_was_collision = False
-        # return False
+    
 
     def is_joint_position_collision(self, joint_position):
         return any(pos0 == pos1 for pos0, pos1 in itertools.combinations(joint_position, 2))
@@ -1523,9 +1511,20 @@ class OvercookedGridworld(object):
         def collision_exists(collision_groups):
             return any(len(agents) > 1 for agents in collision_groups.values())
         
+        def resolve_crossed_paths(new_positions, old_positions):
+            for i in range(len(new_positions)):
+                for j in range(len(new_positions)):
+                    if i != j and new_positions[i] == old_positions[j] and new_positions[j] == old_positions[i]:
+                        new_positions[i] = old_positions[i]
+                        new_positions[j] = old_positions[j]
+            return new_positions
+
         new_positions = list(new_positions)
         old_positions = list(old_positions)
 
+        new_positions = resolve_crossed_paths(new_positions, old_positions)
+
+        # Resolve agents in the same location
         collision_groups = calculate_collision_groups(new_positions)
         while collision_exists(collision_groups):
             new_positions = resolve_collisions(collision_groups, new_positions, old_positions)
@@ -1534,7 +1533,6 @@ class OvercookedGridworld(object):
 
 
     def _handle_collisions(self, old_positions, new_positions):
-        """If ALL agents collide, they stay at their old locations"""
         if self.is_transition_collision(old_positions, new_positions):
             return old_positions
 
