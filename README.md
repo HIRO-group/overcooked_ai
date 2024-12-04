@@ -49,8 +49,8 @@ Note that PyPI releases are stable but infrequent. For the most up-to-date devel
 It is useful to setup a conda environment with Python 3.7 (virtualenv works too):
 
 ```
-conda create -n mhri python=3.7
-conda activate mhri
+conda create -n mHRI python=3.9
+conda activate mHRI
 ```
 
 Clone the repo 
