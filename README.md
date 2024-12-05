@@ -46,7 +46,7 @@ Note that PyPI releases are stable but infrequent. For the most up-to-date devel
 
 ### Building from source 🔧
 
-It is useful to setup a conda environment with Python 3.7 (virtualenv works too):
+It is useful to setup a conda environment with Python 3.9 (virtualenv works too):
 
 ```
 conda create -n mHRI python=3.9
