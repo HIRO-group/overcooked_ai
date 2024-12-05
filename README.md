@@ -55,7 +55,7 @@ conda activate mHRI
 
 Clone the repo 
 ```
-git clone https://github.com/HIRO-group/overcooked_ai
+git clone git@github.com:HIRO-group/overcooked_ai.git
 ```
 Finally, use python setup-tools to locally install
 
