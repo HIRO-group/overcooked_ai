@@ -46,16 +46,16 @@ Note that PyPI releases are stable but infrequent. For the most up-to-date devel
 
 ### Building from source 🔧
 
-It is useful to setup a conda environment with Python 3.7 (virtualenv works too):
+It is useful to setup a conda environment with Python 3.9 (virtualenv works too):
 
 ```
-conda create -n mhri python=3.7
-conda activate mhri
+conda create -n mHRI python=3.9
+conda activate mHRI
 ```
 
 Clone the repo 
 ```
-git clone https://github.com/HIRO-group/overcooked_ai
+git clone git@github.com:HIRO-group/overcooked_ai.git
 ```
 Finally, use python setup-tools to locally install
 
