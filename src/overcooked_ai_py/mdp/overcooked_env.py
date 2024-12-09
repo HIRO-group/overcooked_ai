@@ -242,7 +242,8 @@ class OvercookedEnv(object):
             self._mlam = None
             self._mp = None
         if self.start_state_fn is None:
-            self.state = self.mdp.get_standard_start_state()
+            # self.state = self.mdp.get_standard_start_state()
+            self.state = self.mdp.get_random_start_state_with_fixed_player_positions_for_adversaries(start_state_kwargs)
         else:
             self.state = self.start_state_fn(**start_state_kwargs)
 

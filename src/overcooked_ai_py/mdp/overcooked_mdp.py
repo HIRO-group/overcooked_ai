@@ -1022,6 +1022,10 @@ class OvercookedGridworld(object):
         for p_action, p_legal_actions in zip(joint_action, self.get_actions(state)):
             if p_action not in p_legal_actions:
                 raise ValueError('Invalid action')
+            
+    def get_random_start_state_with_fixed_player_positions_for_adversaries(self, start_state_kwargs):
+        print(start_state_kwargs)
+        pass # TODO
 
     def get_standard_start_state(self):
         if self.start_state:
