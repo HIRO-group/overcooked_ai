@@ -1023,7 +1023,7 @@ class OvercookedGridworld(object):
             if p_action not in p_legal_actions:
                 raise ValueError('Invalid action')
             
-    def get_random_start_state_with_fixed_player_positions_for_adversaries(self, reset_info):
+    def get_constrained_random_start_states(self, reset_info):
         valid_positions = self.get_valid_joint_player_positions()
         if reset_info and reset_info['start_position']:
             final_valid_positions = []
