@@ -1025,11 +1025,14 @@ class OvercookedGridworld(object):
             
     def get_random_start_state_with_fixed_player_positions_for_adversaries(self, reset_info):
         valid_positions = self.get_valid_joint_player_positions()
-        
-        if reset_info:
-            valid_positions = [
-                pos for pos in valid_positions 
-                if all(pos[idx] == reset_pos or reset_pos is None for idx, reset_pos in enumerate(reset_info['start_position']))]
+        if reset_info and reset_info['start_position']:
+            final_valid_positions = []
+            for idx in reset_info['start_position']:
+                for pos in valid_positions:
+                    if reset_info['start_position'][idx] == pos[idx]:
+                        final_valid_positions.append(pos)
+            valid_positions = final_valid_positions
+            assert len(valid_positions) > 0, "No valid positions found for the given start position"
         
         start_pos = valid_positions[np.random.choice(len(valid_positions))]
         start_state = OvercookedState.from_player_positions(start_pos, bonus_orders=self.start_bonus_orders, all_orders=self.start_all_orders, random_orientation=True)
