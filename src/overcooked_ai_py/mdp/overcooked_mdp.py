@@ -732,6 +732,7 @@ class OvercookedState(object):
             dummy_pos_and_or = [(pos, Direction.ALL_DIRECTIONS[np.random.choice(len(Direction.ALL_DIRECTIONS))]) for pos in player_positions]
         else:
             dummy_pos_and_or = [(pos, Direction.NORTH) for pos in player_positions]
+
         return cls.from_players_pos_and_or(dummy_pos_and_or, bonus_orders, all_orders)
 
     def deepcopy(self):
@@ -2118,7 +2119,6 @@ class OvercookedGridworld(object):
     def lossless_state_encoding(self, overcooked_state, goal_objects=None, horizon=400, p_idx=None, debug=False):
         """Featurizes a OvercookedState object into a stack of boolean masks that are easily readable by a CNN"""
 
-        # TODO Ava/Chihui Add support for > 2 players
         assert type(debug) is bool
         base_map_features = ["pot_loc", "counter_loc", "onion_disp_loc", "tomato_disp_loc",
                              "dish_disp_loc", "serve_loc"]
@@ -2134,15 +2134,20 @@ class OvercookedGridworld(object):
             return layer
 
         def process_for_player(primary_agent_idx):
-            # Ensure that primary_agent_idx layers are ordered before other_agent_idx layers
-            other_agent_idx = 1 - primary_agent_idx
-            ordered_player_features = ["player_{}_loc".format(primary_agent_idx), "player_{}_loc".format(other_agent_idx)] + \
-                        ["player_{}_orientation_{}".format(i, Direction.DIRECTION_TO_INDEX[d])
-                        for i, d in itertools.product([primary_agent_idx, other_agent_idx], Direction.ALL_DIRECTIONS)]
+            ordered_player_features = []
 
-            # LAYERS = ordered_player_features + base_map_features + variable_map_features
+            # Ensure that primary_agent_idx layers are ordered before other_agent_idx layers
+            ordered_player_features.append(f"player_{primary_agent_idx}_loc")
+            for i in range(self.num_players):
+                if i != primary_agent_idx:
+                    ordered_player_features.append(f"player_{i}_loc")
+            for i in range(self.num_players):
+                ordered_player_features.extend([
+                    f"player_{i}_orientation_{Direction.DIRECTION_TO_INDEX[d]}"
+                    for d in Direction.ALL_DIRECTIONS
+                ])
             LAYERS = ordered_player_features + base_map_features + variable_map_features + urgency_features + goal_features
-            state_mask_dict = {k:np.zeros(self.shape) for k in LAYERS}
+            state_mask_dict = {k: np.zeros(self.shape) for k in LAYERS}
 
             # MAP LAYERS
             if horizon - overcooked_state.timestep < 40:
@@ -2193,7 +2198,6 @@ class OvercookedGridworld(object):
                 player_orientation_idx = Direction.DIRECTION_TO_INDEX[player.orientation]
                 state_mask_dict["player_{}_loc".format(i)] = make_layer(player.position, 1)
                 state_mask_dict["player_{}_orientation_{}".format(i, player_orientation_idx)] = make_layer(player.position, 1)
-
 
             # OBJECT & STATE LAYERS
             for obj in all_objects:
