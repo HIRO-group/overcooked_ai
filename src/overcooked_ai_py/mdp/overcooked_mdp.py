@@ -1025,17 +1025,23 @@ class OvercookedGridworld(object):
                 raise ValueError('Invalid action')
             
     def get_constrained_random_start_states(self, reset_info):
-        valid_positions = self.get_valid_joint_player_positions()
+        valid_player_positions = self.get_valid_player_positions()
+        exclude_list, fixed_indexes = [], []
         if reset_info and reset_info['start_position']:
-            final_valid_positions = []
-            for idx in reset_info['start_position']:
-                for pos in valid_positions:
-                    if reset_info['start_position'][idx] == pos[idx]:
-                        final_valid_positions.append(pos)
-            valid_positions = final_valid_positions
-            assert len(valid_positions) > 0, "No valid positions found for the given start position"
-        
-        start_pos = valid_positions[np.random.choice(len(valid_positions))]
+            exclude_list = list(reset_info['start_position'].values())
+            fixed_indexes = list(reset_info['start_position'].keys())
+    
+        filtered_valid_positions = [pos for pos in valid_player_positions if pos not in exclude_list]    
+        start_pos = []
+        for p_idx in range(self.num_players):
+            if p_idx in fixed_indexes:
+                start_pos.append(reset_info['start_position'][p_idx])
+            else:
+                random_pos_idx = np.random.choice(len(filtered_valid_positions))
+                random_pos = filtered_valid_positions[random_pos_idx]
+                start_pos.append(random_pos)
+            filtered_valid_positions = [pos for pos in filtered_valid_positions if pos not in start_pos]
+
         start_state = OvercookedState.from_player_positions(start_pos, bonus_orders=self.start_bonus_orders, all_orders=self.start_all_orders, random_orientation=True)
         return start_state
 
