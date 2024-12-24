@@ -2134,14 +2134,6 @@ class OvercookedGridworld(object):
         goal_features = ["goal"]
         all_objects = overcooked_state.all_objects_list
 
-        def make_layer_with_multiple_values( positions, values):
-            if len(positions) != len(set(positions)):
-                raise ValueError("Duplicate positions detected. All positions must be unique.")
-            layer = np.zeros(self.shape)
-            for pos, val in zip(positions, values):
-                layer[pos] = val
-            return layer
-
         def make_layer(position, value):
             layer = np.zeros(self.shape)
             layer[position] = value
