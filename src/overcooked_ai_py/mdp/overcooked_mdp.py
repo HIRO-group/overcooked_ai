@@ -1025,26 +1025,91 @@ class OvercookedGridworld(object):
                 raise ValueError('Invalid action')
 
     def get_constrained_random_start_states(self, reset_info):
-        valid_player_positions = self.get_valid_player_positions()
-        exclude_list, fixed_indexes = [], []
-        if reset_info and reset_info['start_position']:
-            exclude_list = list(reset_info['start_position'].values())
-            fixed_indexes = list(reset_info['start_position'].keys())
+        print('Called get_constrained_random_start_states')
+        if self.layout_name == 'secret_heaven':
+            valid_player_positions = [(7, 3), (7, 4), (7, 5), (8, 3), (8, 4), (8, 5), (9, 3), (9, 4), (9, 5), (10, 3), (10, 4), (10, 5)]
+        else:
+            valid_player_positions = self.get_valid_player_positions()
 
-        filtered_valid_positions = [pos for pos in valid_player_positions if pos not in exclude_list]
+        if self.layout_name == 'asymmetric_advantages':
+            group1 = [(7, 1), (5, 2), (6, 2), (7, 2), (5, 3), (6, 3), (7, 3)]
+            group2 = [(1, 1), (1, 2), (1, 3), (2, 2), (2, 3), (3, 2), (3, 3)]
+        elif self.layout_name == 'forced_coordination':
+            group1 = [(3, 1), (3, 2), (3, 3)]
+            group2 = [(1, 1), (1, 2), (1, 3)]
+        else:
+            group1, group2 = valid_player_positions, []
+
+        print('Valid player positions: {}'.format(valid_player_positions))
+        print('Group 1: {}'.format(group1))
+        print('Group 2: {}'.format(group2))
+        # group1 = [pos for pos in group1 if pos in valid_player_positions]
+        # group2 = [pos for pos in group2 if pos in valid_player_positions]
+        # for pos in group1:
+        #     if pos not in valid_player_positions:
+        #         print('Removing position {} from group 1'.format(pos))
+        #         group1.remove(pos)
+
+        # for pos in group2:
+        #     if pos not in valid_player_positions:
+        #         print('Removing position {} from group 2'.format(pos))
+        #         group2.remove(pos)
+
+        player_indexes_with_fixed_positions, fixed_positions = [], []
+        if reset_info and reset_info['start_position']:
+            player_indexes_with_fixed_positions = list(reset_info['start_position'].keys())
+            fixed_positions = list(reset_info['start_position'].values())
+        
+        print('Fixed positions: {}'.format(fixed_positions))
+        # group1 = [pos for pos in group1 if pos not in fixed_positions]
+        # group2 = [pos for pos in group2 if pos not in fixed_positions]
+
+        print('Valid player positions: {}'.format(valid_player_positions))
+        print('Group 1: {}'.format(group1))
+        print('Group 2: {}'.format(group2))
+        print('For loop starts:')
+
         start_pos = []
         for p_idx in range(self.num_players):
-            if p_idx in fixed_indexes:
-                start_pos.append(reset_info['start_position'][p_idx])
+            if p_idx in player_indexes_with_fixed_positions:
+                pos_p_idx = reset_info['start_position'][p_idx]
+                print('Fixed position for player {}: {}'.format(p_idx, pos_p_idx))
             else:
-                random_pos_idx = np.random.choice(len(filtered_valid_positions))
-                random_pos = filtered_valid_positions[random_pos_idx]
-                start_pos.append(random_pos)
-            filtered_valid_positions = [pos for pos in filtered_valid_positions if pos not in start_pos]
+                if len(group1)!= 0 and not any(item in start_pos for item in group1) and not any(item in fixed_positions for item in group1):
+                    for pos in group1:
+                        if pos not in start_pos:
+                            pos_p_idx = pos
+                            break
+                    print('Group 1 position for player {}: {}'.format(p_idx, pos_p_idx))
+                elif len(group2)!= 0 and not any(item in start_pos for item in group2) and not any(item in fixed_positions for item in group2):
+                    for pos in group2:
+                        if pos not in start_pos:
+                            pos_p_idx = pos
+                            break
+                    print('Group 2 position for player {}: {}'.format(p_idx, pos_p_idx))
+                else:
+                    pos_p_idx = valid_player_positions[np.random.choice(len(valid_player_positions))]
+                    print('Random position for player {}: {}'.format(p_idx, pos_p_idx))
 
-        start_state = OvercookedState.from_player_positions(start_pos, bonus_orders=self.start_bonus_orders, all_orders=self.start_all_orders, random_orientation=True)
+            start_pos.append(pos_p_idx)
+            
+            if pos in valid_player_positions:
+                valid_player_positions.remove(start_pos[-1])
+
+            print('Start positions: {}'.format(start_pos))
+            print('Valid player positions: {}'.format(valid_player_positions))
+            print('Group 1: {}'.format(group1))
+            print('Group 2: {}'.format(group2))
+            print('-----')
+            
+            
+        start_state = OvercookedState.from_player_positions(
+            start_pos,
+            bonus_orders=self.start_bonus_orders,
+            all_orders=self.start_all_orders,
+            random_orientation=True
+        )
         return start_state
-
 
     def get_standard_start_state(self):
         if self.start_state:
