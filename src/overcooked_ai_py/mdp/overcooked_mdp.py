@@ -1025,26 +1025,53 @@ class OvercookedGridworld(object):
                 raise ValueError('Invalid action')
 
     def get_constrained_random_start_states(self, reset_info):
-        valid_player_positions = self.get_valid_player_positions()
-        exclude_list, fixed_indexes = [], []
-        if reset_info and reset_info['start_position']:
-            exclude_list = list(reset_info['start_position'].values())
-            fixed_indexes = list(reset_info['start_position'].keys())
+        if self.layout_name in ['secret_heaven', '5_chefs_secret_heaven', 'dec_5_chefs_secret_heaven']:
+            valid_player_positions = [(7, 3), (7, 4), (7, 5), (8, 3), (8, 4), (8, 5), (9, 3), (9, 4), (9, 5), (10, 3), (10, 4), (10, 5)]
+        else:
+            valid_player_positions = self.get_valid_player_positions()
 
-        filtered_valid_positions = [pos for pos in valid_player_positions if pos not in exclude_list]
+        if self.layout_name == 'asymmetric_advantages':
+            group1 = [(7, 1), (5, 2), (6, 2), (7, 2), (5, 3), (6, 3), (7, 3)]
+            group2 = [(1, 1), (1, 2), (1, 3), (2, 2), (2, 3), (3, 2), (3, 3)]
+        elif self.layout_name == 'forced_coordination':
+            group1 = [(3, 1), (3, 2), (3, 3)]
+            group2 = [(1, 1), (1, 2), (1, 3)]
+        else:
+            group1, group2 = valid_player_positions, []
+
+        player_indexes_with_fixed_positions, fixed_positions = [], []
+        if reset_info and reset_info['start_position']:
+            player_indexes_with_fixed_positions = list(reset_info['start_position'].keys())
+            fixed_positions = list(reset_info['start_position'].values())
+
         start_pos = []
         for p_idx in range(self.num_players):
-            if p_idx in fixed_indexes:
-                start_pos.append(reset_info['start_position'][p_idx])
+            if p_idx in player_indexes_with_fixed_positions:
+                pos_p_idx = reset_info['start_position'][p_idx]
             else:
-                random_pos_idx = np.random.choice(len(filtered_valid_positions))
-                random_pos = filtered_valid_positions[random_pos_idx]
-                start_pos.append(random_pos)
-            filtered_valid_positions = [pos for pos in filtered_valid_positions if pos not in start_pos]
+                if len(group1)!= 0 and not any(item in start_pos for item in group1) and not any(item in fixed_positions for item in group1):
+                    for pos in group1:
+                        if pos not in start_pos:
+                            pos_p_idx = pos
+                            break
+                elif len(group2)!= 0 and not any(item in start_pos for item in group2) and not any(item in fixed_positions for item in group2):
+                    for pos in group2:
+                        if pos not in start_pos:
+                            pos_p_idx = pos
+                            break
+                else:
+                    pos_p_idx = valid_player_positions[np.random.choice(len(valid_player_positions))]
 
-        start_state = OvercookedState.from_player_positions(start_pos, bonus_orders=self.start_bonus_orders, all_orders=self.start_all_orders, random_orientation=True)
+            start_pos.append(pos_p_idx)
+            valid_player_positions = [p for p in valid_player_positions if p != pos_p_idx]
+            
+        start_state = OvercookedState.from_player_positions(
+            start_pos,
+            bonus_orders=self.start_bonus_orders,
+            all_orders=self.start_all_orders,
+            random_orientation=True
+        )
         return start_state
-
 
     def get_standard_start_state(self):
         if self.start_state:
