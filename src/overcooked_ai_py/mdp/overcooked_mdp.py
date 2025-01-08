@@ -1025,8 +1025,7 @@ class OvercookedGridworld(object):
                 raise ValueError('Invalid action')
 
     def get_constrained_random_start_states(self, reset_info):
-        print('Called get_constrained_random_start_states')
-        if self.layout_name == 'secret_heaven':
+        if self.layout_name in ['secret_heaven', '5_chefs_secret_heaven', 'dec_5_chefs_secret_heaven']:
             valid_player_positions = [(7, 3), (7, 4), (7, 5), (8, 3), (8, 4), (8, 5), (9, 3), (9, 4), (9, 5), (10, 3), (10, 4), (10, 5)]
         else:
             valid_player_positions = self.get_valid_player_positions()
@@ -1040,68 +1039,31 @@ class OvercookedGridworld(object):
         else:
             group1, group2 = valid_player_positions, []
 
-        print('Valid player positions: {}'.format(valid_player_positions))
-        print('Group 1: {}'.format(group1))
-        print('Group 2: {}'.format(group2))
-        # group1 = [pos for pos in group1 if pos in valid_player_positions]
-        # group2 = [pos for pos in group2 if pos in valid_player_positions]
-        # for pos in group1:
-        #     if pos not in valid_player_positions:
-        #         print('Removing position {} from group 1'.format(pos))
-        #         group1.remove(pos)
-
-        # for pos in group2:
-        #     if pos not in valid_player_positions:
-        #         print('Removing position {} from group 2'.format(pos))
-        #         group2.remove(pos)
-
         player_indexes_with_fixed_positions, fixed_positions = [], []
         if reset_info and reset_info['start_position']:
             player_indexes_with_fixed_positions = list(reset_info['start_position'].keys())
             fixed_positions = list(reset_info['start_position'].values())
-        
-        print('Fixed positions: {}'.format(fixed_positions))
-        # group1 = [pos for pos in group1 if pos not in fixed_positions]
-        # group2 = [pos for pos in group2 if pos not in fixed_positions]
-
-        print('Valid player positions: {}'.format(valid_player_positions))
-        print('Group 1: {}'.format(group1))
-        print('Group 2: {}'.format(group2))
-        print('For loop starts:')
 
         start_pos = []
         for p_idx in range(self.num_players):
             if p_idx in player_indexes_with_fixed_positions:
                 pos_p_idx = reset_info['start_position'][p_idx]
-                print('Fixed position for player {}: {}'.format(p_idx, pos_p_idx))
             else:
                 if len(group1)!= 0 and not any(item in start_pos for item in group1) and not any(item in fixed_positions for item in group1):
                     for pos in group1:
                         if pos not in start_pos:
                             pos_p_idx = pos
                             break
-                    print('Group 1 position for player {}: {}'.format(p_idx, pos_p_idx))
                 elif len(group2)!= 0 and not any(item in start_pos for item in group2) and not any(item in fixed_positions for item in group2):
                     for pos in group2:
                         if pos not in start_pos:
                             pos_p_idx = pos
                             break
-                    print('Group 2 position for player {}: {}'.format(p_idx, pos_p_idx))
                 else:
                     pos_p_idx = valid_player_positions[np.random.choice(len(valid_player_positions))]
-                    print('Random position for player {}: {}'.format(p_idx, pos_p_idx))
 
             start_pos.append(pos_p_idx)
-            
-            if pos in valid_player_positions:
-                valid_player_positions.remove(start_pos[-1])
-
-            print('Start positions: {}'.format(start_pos))
-            print('Valid player positions: {}'.format(valid_player_positions))
-            print('Group 1: {}'.format(group1))
-            print('Group 2: {}'.format(group2))
-            print('-----')
-            
+            valid_player_positions = [p for p in valid_player_positions if p != pos_p_idx]
             
         start_state = OvercookedState.from_player_positions(
             start_pos,
