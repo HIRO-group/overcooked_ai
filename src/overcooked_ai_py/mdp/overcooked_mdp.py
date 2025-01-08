@@ -1043,28 +1043,28 @@ class OvercookedGridworld(object):
         if reset_info and reset_info['start_position']:
             player_indexes_with_fixed_positions = list(reset_info['start_position'].keys())
             fixed_positions = list(reset_info['start_position'].values())
+        valid_player_positions = [p for p in valid_player_positions if p not in fixed_positions]
 
         start_pos = []
         for p_idx in range(self.num_players):
             if p_idx in player_indexes_with_fixed_positions:
                 pos_p_idx = reset_info['start_position'][p_idx]
             else:
-                if len(group1)!= 0 and not any(item in start_pos for item in group1) and not any(item in fixed_positions for item in group1):
-                    for pos in group1:
-                        if pos not in start_pos:
-                            pos_p_idx = pos
-                            break
-                elif len(group2)!= 0 and not any(item in start_pos for item in group2) and not any(item in fixed_positions for item in group2):
-                    for pos in group2:
-                        if pos not in start_pos:
-                            pos_p_idx = pos
-                            break
+                
+                if group1 and not any(item in start_pos for item in group1) and not any(item in fixed_positions for item in group1):
+                    group1_filtered = [p for p in group1 if p not in start_pos]
+                    pos_p_idx = group1_filtered[np.random.choice(len(group1_filtered))]
+
+                elif group2 and not any(item in start_pos for item in group2) and not any(item in fixed_positions for item in group2):
+                    group2_filtered = [p for p in group2 if p not in start_pos]
+                    pos_p_idx = group2_filtered[np.random.choice(len(group2_filtered))]
+
                 else:
                     pos_p_idx = valid_player_positions[np.random.choice(len(valid_player_positions))]
 
             start_pos.append(pos_p_idx)
             valid_player_positions = [p for p in valid_player_positions if p != pos_p_idx]
-            
+
         start_state = OvercookedState.from_player_positions(
             start_pos,
             bonus_orders=self.start_bonus_orders,
