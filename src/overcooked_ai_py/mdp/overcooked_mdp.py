@@ -1043,6 +1043,7 @@ class OvercookedGridworld(object):
         if reset_info and reset_info['start_position']:
             player_indexes_with_fixed_positions = list(reset_info['start_position'].keys())
             fixed_positions = list(reset_info['start_position'].values())
+
         valid_player_positions = [p for p in valid_player_positions if p not in fixed_positions]
 
         start_pos = []
@@ -1073,9 +1074,27 @@ class OvercookedGridworld(object):
         )
         return start_state
 
-    def get_standard_start_state(self):
+    def get_standard_start_state(self, reset_info):
         if self.start_state:
             return self.start_state
+        
+        original_positions = self.start_player_positions.copy()
+        if reset_info and reset_info['start_position']:
+            occupied_positions = {}
+            original_positions = self.start_player_positions.copy()
+            
+            for p_idx, pos in reset_info['start_position'].items():
+                if pos in occupied_positions:
+                    conflicting_p_idx = occupied_positions[pos]
+                    self.start_player_positions[conflicting_p_idx] = original_positions[p_idx]
+                    self.start_player_positions[p_idx] = pos
+                else:
+                    self.start_player_positions[p_idx] = pos
+                    occupied_positions[pos] = p_idx
+        
+        
+        print('orig: ', original_positions, ', start:', self.start_player_positions, reset_info)
+
         start_state = OvercookedState.from_player_positions(
             self.start_player_positions, bonus_orders=self.start_bonus_orders, all_orders=self.start_all_orders
         )
