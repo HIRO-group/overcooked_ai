@@ -1050,7 +1050,7 @@ class OvercookedGridworld(object):
             if p_idx in player_indexes_with_fixed_positions:
                 pos_p_idx = reset_info['start_position'][p_idx]
             else:
-                
+
                 if group1 and not any(item in start_pos for item in group1) and not any(item in fixed_positions for item in group1):
                     group1_filtered = [p for p in group1 if p not in start_pos]
                     pos_p_idx = group1_filtered[np.random.choice(len(group1_filtered))]
@@ -1514,13 +1514,15 @@ class OvercookedGridworld(object):
         list(zip(*[self._move_if_direction(p.position, p.orientation, a) \
             for p, a in zip(old_player_states, joint_action)]))
 
-
         old_positions = tuple(p.position for p in old_player_states)
         new_positions = self._handle_collisions(old_positions, new_positions)
         return new_positions, new_orientations
 
     def is_transition_collision(self, old_positions, new_positions):
-        # Checking if ALL players ended up in the same position
+        if len(new_positions) <= 1:
+            self.prev_step_was_collision = False
+            return False
+        # Checking if ALL players ended up in the same position in n-agents system, where n>1.
         new_pos_list = list(new_positions)
         first_agent_pos = new_pos_list[0]
         collision = all(agent_pos == first_agent_pos for agent_pos in new_pos_list)
