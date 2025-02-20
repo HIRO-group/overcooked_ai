@@ -242,8 +242,8 @@ class OvercookedEnv(object):
             self._mlam = None
             self._mp = None
         if self.start_state_fn is None:
-            # self.state = self.mdp.get_standard_start_state()
-            self.state = self.mdp.get_constrained_random_start_states(reset_info=reset_info)
+            self.state = self.mdp.get_standard_start_state(reset_info=reset_info)
+            # self.state = self.mdp.get_constrained_random_start_states(reset_info=reset_info)
         else:
             self.state = self.start_state_fn(**start_state_kwargs)
 
